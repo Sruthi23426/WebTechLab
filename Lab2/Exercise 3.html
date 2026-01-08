@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mini Task Board</title>
+</head>
+
+<body style="margin:0; font-family: Arial; background:#eef2f7;">
+
+    <!-- HEADER -->
+    <h1 style="text-align:center; color:#2c3e50; padding:15px;">
+        📝 Mini Task Board
+    </h1>
+
+    <!-- INPUT SECTION -->
+    <div style="text-align:center; margin-bottom:20px;">
+        <input type="text" id="taskInput" placeholder="Enter task name"
+               style="padding:10px; width:250px; border-radius:5px; border:1px solid #ccc;">
+        <button onclick="addTask()"
+                style="padding:10px 15px; border:none; border-radius:5px;
+                       background:#3498db; color:white; cursor:pointer;">
+            Add Task
+        </button>
+    </div>
+
+    <!-- TASK BOARD -->
+    <div style="display:flex; justify-content:space-around; padding:20px;">
+
+        <!-- TO DO -->
+        <div class="column" ondrop="drop(event)" ondragover="allowDrop(event)"
+             style="width:30%; background:#ffffff; padding:10px; border-radius:8px;">
+            <h3 style="text-align:center; color:#2980b9;">To Do</h3>
+        </div>
+
+        <!-- IN PROGRESS -->
+        <div class="column" ondrop="drop(event)" ondragover="allowDrop(event)"
+             style="width:30%; background:#ffffff; padding:10px; border-radius:8px;">
+            <h3 style="text-align:center; color:#f39c12;">In Progress</h3>
+        </div>
+
+        <!-- COMPLETED -->
+        <div class="column completed" ondrop="drop(event)" ondragover="allowDrop(event)"
+             style="width:30%; background:#ffffff; padding:10px; border-radius:8px;">
+            <h3 style="text-align:center; color:#27ae60;">Completed</h3>
+        </div>
+
+    </div>
+
+    <!-- MESSAGE -->
+    <p id="message" style="text-align:center; color:green; font-weight:bold;"></p>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        function addTask() {
+            var taskName = document.getElementById("taskInput").value;
+
+            if (taskName === "") {
+                alert("Please enter a task name");
+                return;
+            }
+
+            var task = document.createElement("div");
+            task.className = "task";
+            task.draggable = true;
+            task.id = "task" + new Date().getTime();
+
+            var date = new Date().toLocaleDateString();
+
+            task.innerHTML = "<strong>" + taskName + "</strong><br><small>" + date + "</small>";
+
+            task.style.background = "#ecf0f1";
+            task.style.padding = "10px";
+            task.style.margin = "10px 0";
+            task.style.borderRadius = "5px";
+            task.style.cursor = "move";
+
+            task.ondragstart = function (event) {
+                event.dataTransfer.setData("text", event.target.id);
+            };
+
+            document.querySelector(".column").appendChild(task);
+            document.getElementById("taskInput").value = "";
+        }
+
+        function allowDrop(event) {
+            event.preventDefault();
+        }
+
+        function drop(event) {
+            event.preventDefault();
+            var data = event.dataTransfer.getData("text");
+            var task = document.getElementById(data);
+            event.target.closest(".column").appendChild(task);
+
+            if (event.target.closest(".column").classList.contains("completed")) {
+                task.style.background = "#2ecc71";
+                task.style.color = "white";
+                document.getElementById("message").innerHTML =
+                    "Task Completed Successfully";
+            }
+        }
+    </script>
+
+</body>
+</html>
