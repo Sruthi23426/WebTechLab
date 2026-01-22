@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dynamic Survey Builder</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #a9d2fc;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 6px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+
+    .question {
+      margin-bottom: 20px;
+      padding: 12px;
+      background-color: #f9f9f9;
+      border-left: 4px solid #3f51b5;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 6px;
+      color: #333333;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 6px;
+      border-radius: 4px;
+      border: 1px solid #cccccc;
+    }
+
+    .options label {
+      font-weight: normal;
+      margin-right: 15px;
+      color: #444444;
+    }
+
+    .error {
+      color: red;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    button {
+      padding: 8px 16px;
+      background-color: #3f51b5;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #303f9f;
+    }
+
+    .success {
+      margin-top: 15px;
+      color: green;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>Dynamic Survey Builder</h1>
+
+<div class="container">
+  <form id="surveyForm">
+    <button type="submit">Submit Survey</button>
+    <div id="successMessage" class="success"></div>
+  </form>
+</div>
+
+<script>
+  /* 1. Structure to store questions and their types */
+  const questions = [
+    {
+      id: "q1",
+      text: "Enter your full name:",
+      type: "text",
+      mandatory: true,
+      maxLength: 40
+    },
+    {
+      id: "q2",
+      text: "Select your technical skills:",
+      type: "checkbox",
+      options: ["Java", "Python", "JavaScript", "C++"],
+      mandatory: true,
+      minSelect: 1,
+      maxSelect: 3
+    },
+    {
+      id: "q3",
+      text: "Select your preferred role:",
+      type: "radio",
+      options: ["Developer", "Tester", "Analyst"],
+      mandatory: true
+    },
+    {
+      id: "q4",
+      text: "Additional remarks:",
+      type: "text",
+      mandatory: false,
+      maxLength: 150
+    }
+  ];
+
+  const form = document.getElementById("surveyForm");
+
+  /* 2. Dynamically generate form fields using DOM */
+  questions.forEach(q => {
+    const div = document.createElement("div");
+    div.className = "question";
+
+    const label = document.createElement("label");
+    label.textContent = q.text;
+    div.appendChild(label);
+
+    if (q.type === "text") {
+      const input = document.createElement("input");
+      input.type = "text";
+      input.id = q.id;
+      div.appendChild(input);
+    }
+
+    if (q.type === "checkbox") {
+      const optionsDiv = document.createElement("div");
+      optionsDiv.className = "options";
+      q.options.forEach(opt => {
+        const lbl = document.createElement("label");
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.name = q.id;
+        checkbox.value = opt;
+        lbl.appendChild(checkbox);
+        lbl.appendChild(document.createTextNode(" " + opt));
+        optionsDiv.appendChild(lbl);
+      });
+      div.appendChild(optionsDiv);
+    }
+
+    if (q.type === "radio") {
+      const optionsDiv = document.createElement("div");
+      optionsDiv.className = "options";
+      q.options.forEach(opt => {
+        const lbl = document.createElement("label");
+        const radio = document.createElement("input");
+        radio.type = "radio";
+        radio.name = q.id;
+        radio.value = opt;
+        lbl.appendChild(radio);
+        lbl.appendChild(document.createTextNode(" " + opt));
+        optionsDiv.appendChild(lbl);
+      });
+      div.appendChild(optionsDiv);
+    }
+
+    const error = document.createElement("div");
+    error.className = "error";
+    error.id = q.id + "_error";
+    div.appendChild(error);
+
+    form.insertBefore(div, form.querySelector("button"));
+  });
+
+  /* 4. JavaScript function to validate inputs */
+  function validateForm(event) {
+    event.preventDefault();
+    let isValid = true;
+
+    questions.forEach(q => {
+      const errorDiv = document.getElementById(q.id + "_error");
+      errorDiv.textContent = "";
+
+      if (q.type === "text") {
+        const value = document.getElementById(q.id).value.trim();
+        if (q.mandatory && value === "") {
+          errorDiv.textContent = "This field is mandatory.";
+          isValid = false;
+        } else if (value.length > q.maxLength) {
+          errorDiv.textContent = "Character limit exceeded.";
+          isValid = false;
+        }
+      }
+
+      if (q.type === "checkbox") {
+        const selected = document.querySelectorAll(`input[name="${q.id}"]:checked`);
+        if (q.mandatory && selected.length < q.minSelect) {
+          errorDiv.textContent = "Minimum selection requirement not met.";
+          isValid = false;
+        }
+        if (selected.length > q.maxSelect) {
+          errorDiv.textContent = "Maximum selection limit exceeded.";
+          isValid = false;
+        }
+      }
+
+      if (q.type === "radio") {
+        const selected = document.querySelector(`input[name="${q.id}"]:checked`);
+        if (q.mandatory && !selected) {
+          errorDiv.textContent = "Please select an option.";
+          isValid = false;
+        }
+      }
+    });
+
+    /* 6. Prevent submission until validation passes */
+    if (isValid) {
+      document.getElementById("successMessage").textContent =
+        "Survey submitted successfully.";
+      form.reset();
+    } else {
+      document.getElementById("successMessage").textContent = "";
+    }
+  }
+
+  form.addEventListener("submit", validateForm);
+</script>
+
+</body>
+</html>

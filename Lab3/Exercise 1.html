@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Adaptive Registration System</title>
+
+    <style>
+        body {
+            background: #f1f3fb;
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+
+        .container {
+            width: 420px;
+            background: #ffffff;
+            padding: 25px;
+            margin: 40px auto;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        h2 {
+            text-align: center;
+            color: #5a2ea6;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 12px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #764ba2;
+        }
+
+        .error {
+            color: red;
+            font-size: 13px;
+        }
+
+        .success {
+            color: green;
+            font-size: 13px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .invalid {
+            border: 2px solid red;
+        }
+
+        .valid {
+            border: 2px solid green;
+        }
+
+        button {
+            margin-top: 20px;
+            width: 100%;
+            padding: 10px;
+            background: #764ba2;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background: gray;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>User Registration</h2>
+
+    <form id="regForm">
+
+        <label>Name</label>
+        <input type="text" id="name">
+
+        <label>Email</label>
+        <input type="email" id="email">
+        <div id="emailMsg" class="error"></div>
+
+        <label>Password</label>
+        <input type="password" id="password">
+        <div id="passMsg" class="error"></div>
+
+        <label>Confirm Password</label>
+        <input type="password" id="confirmPassword">
+        <div id="confirmMsg" class="error"></div>
+
+        <label>Age</label>
+        <input type="number" id="age">
+
+        <label>Role</label>
+        <select id="role" onchange="adjustValidation()">
+            <option value="">Select Role</option>
+            <option value="student">Student</option>
+            <option value="teacher">Teacher</option>
+            <option value="admin">Admin</option>
+        </select>
+
+        <div id="skillsDiv" class="hidden">
+            <label>Skills</label>
+            <input type="text" id="skills">
+        </div>
+
+        <button type="submit" id="submitBtn" disabled>Register</button>
+    </form>
+</div>
+
+<script>
+    const email = document.getElementById("email");
+    const password = document.getElementById("password");
+    const confirmPassword = document.getElementById("confirmPassword");
+    const role = document.getElementById("role");
+    const submitBtn = document.getElementById("submitBtn");
+
+    function validateEmail() {
+        const domain = email.value.split("@")[1];
+        if (!domain || !domain.includes(".")) {
+            email.classList.add("invalid");
+            email.classList.remove("valid");
+            emailMsg.textContent = "Invalid email domain";
+            return false;
+        }
+        email.classList.add("valid");
+        email.classList.remove("invalid");
+        emailMsg.textContent = "";
+        return true;
+    }
+
+    function validatePassword() {
+        let pwd = password.value;
+        let roleValue = role.value;
+
+        let strongRegex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$!]).{8,}$/;
+
+        if (roleValue === "admin" && !strongRegex.test(pwd)) {
+            passMsg.textContent = "Admin password must have uppercase, number & special char";
+            password.classList.add("invalid");
+            return false;
+        }
+
+        if (pwd.length < 6) {
+            passMsg.textContent = "Password must be at least 6 characters";
+            password.classList.add("invalid");
+            return false;
+        }
+
+        password.classList.remove("invalid");
+        password.classList.add("valid");
+        passMsg.textContent = "";
+        return true;
+    }
+
+    function validateConfirmPassword() {
+        if (password.value !== confirmPassword.value) {
+            confirmMsg.textContent = "Passwords do not match";
+            confirmPassword.classList.add("invalid");
+            return false;
+        }
+        confirmPassword.classList.remove("invalid");
+        confirmPassword.classList.add("valid");
+        confirmMsg.textContent = "";
+        return true;
+    }
+
+    function adjustValidation() {
+        if (role.value === "teacher" || role.value === "admin") {
+            skillsDiv.classList.remove("hidden");
+        } else {
+            skillsDiv.classList.add("hidden");
+        }
+        checkFormValidity();
+    }
+
+    function checkFormValidity() {
+        if (validateEmail() && validatePassword() && validateConfirmPassword() && role.value !== "") {
+            submitBtn.disabled = false;
+        } else {
+            submitBtn.disabled = true;
+        }
+    }
+
+    email.addEventListener("input", checkFormValidity);
+    password.addEventListener("input", checkFormValidity);
+    confirmPassword.addEventListener("input", checkFormValidity);
+
+    document.getElementById("regForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        alert("Registration Successful!");
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Intelligent Shopping Cart</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #e3f2fd, #fce4ec);
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th {
+      background: #673ab7;
+      color: white;
+      padding: 10px;
+    }
+
+    td {
+      padding: 10px;
+      text-align: center;
+    }
+
+    tr:nth-child(even) {
+      background: #f3e5f5;
+    }
+
+    input[type="number"], input[type="text"] {
+      padding: 5px;
+      width: 80px;
+      border-radius: 5px;
+      border: 1px solid #aaa;
+    }
+
+    button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 5px;
+      background: #ff5722;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #e64a19;
+    }
+
+    .coupon {
+      margin-top: 20px;
+    }
+
+    /* Flex row for heading + input + button */
+    .coupon-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+      justify-content: flex-start; /* left aligned */
+    }
+
+    .coupon-row h3 {
+      margin: 0;
+      font-size: 18px;
+      color: #2c3e50;
+    }
+
+    .coupon-row input {
+      width: 200px;
+    }
+
+    .summary {
+      margin-top: 20px;
+      padding: 15px;
+      background: #e8f5e9;
+      border-radius: 8px;
+      color: #2e7d32;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>Intelligent Shopping Cart</h1>
+
+<div class="container">
+
+  <table>
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Category</th>
+        <th>Price (₹)</th>
+        <th>Quantity</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="cart"></tbody>
+  </table>
+
+  <!-- Coupon Section -->
+  <div class="coupon">
+    <div class="coupon-row">
+      <h3>Apply Coupon:</h3>
+      <input type="text" id="couponCode">
+      <button onclick="applyCoupon()">Apply</button>
+    </div>
+  </div>
+
+  <div class="summary" id="summary"></div>
+
+</div>
+
+<script>
+  // 1. Product Array
+  let products = [
+    { name: "Laptop", category: "Electronics", price: 50000, quantity: 1 },
+    { name: "Headphones", category: "Electronics", price: 2000, quantity: 2 },
+    { name: "T-Shirt", category: "Clothing", price: 800, quantity: 3 }
+  ];
+
+  let couponDiscount = 0;
+
+  // Render Cart
+  function renderCart() {
+    let cartHTML = "";
+    let total = 0;
+    let bulkDiscount = 0;
+    let categoryDiscount = 0;
+
+    products.forEach((p, index) => {
+      let itemTotal = p.price * p.quantity;
+      total += itemTotal;
+
+      // 3. Bulk Discount (10% if quantity >= 3)
+      if (p.quantity >= 3) {
+        bulkDiscount += itemTotal * 0.10;
+      }
+
+      // 3. Category Discount (Electronics 5%)
+      if (p.category === "Electronics") {
+        categoryDiscount += itemTotal * 0.05;
+      }
+
+      cartHTML += `
+        <tr>
+          <td>${p.name}</td>
+          <td>${p.category}</td>
+          <td>${p.price}</td>
+          <td>
+            <input type="number" min="1" value="${p.quantity}"
+            onchange="updateQuantity(${index}, this.value)">
+          </td>
+          <td>
+            <button onclick="removeItem(${index})">Remove</button>
+          </td>
+        </tr>
+      `;
+    });
+
+    let finalTotal = total - bulkDiscount - categoryDiscount - couponDiscount;
+
+    document.getElementById("cart").innerHTML = cartHTML;
+    document.getElementById("summary").innerHTML = `
+      <p>Subtotal: ₹${total.toFixed(2)}</p>
+      <p>Bulk Discount: -₹${bulkDiscount.toFixed(2)}</p>
+      <p>Category Discount: -₹${categoryDiscount.toFixed(2)}</p>
+      <p>Coupon Discount: -₹${couponDiscount.toFixed(2)}</p>
+      <h3>Total Payable: ₹${finalTotal.toFixed(2)}</h3>
+    `;
+  }
+
+  // 2. Update Quantity
+  function updateQuantity(index, qty) {
+    products[index].quantity = parseInt(qty);
+    renderCart();
+  }
+
+  // 2. Remove Item
+  function removeItem(index) {
+    products.splice(index, 1);
+    renderCart();
+  }
+
+  // 4. Coupon Validation using String Methods
+  function applyCoupon() {
+    let code = document.getElementById("couponCode").value.trim().toUpperCase();
+
+    if (code.startsWith("SAVE")) {
+      couponDiscount = 500;
+      alert("₹500 Coupon Applied!");
+    } 
+    else if (code.includes("FESTIVE")) {
+      couponDiscount = 1000;
+      alert("Festive ₹1000 Discount Applied!");
+    } 
+    else {
+      couponDiscount = 0;
+      alert("Invalid Coupon Code");
+    }
+
+    renderCart();
+  }
+
+  // Initial Render
+  renderCart();
+</script>
+
+</body>
+</html>
